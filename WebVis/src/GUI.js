@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { Scenario } from './Scenario.js';
 import { gScene, gLights } from './main.js';
-import { moduleBrush } from './utils.js';
 
 // Exact filenames of example scenarios in /Scenarios/
 let EXAMPLE_SCENARIOS = [
@@ -63,15 +62,6 @@ window._toggleFullbright = function() {
     gLights.headlamp.intensity = gLights._fullbright ? 0 : gLights._defaultHeadlampIntensity;
 }
 
-// MRWT Mode Toggle
-window._toggleMRWTMode = function() {
-    gAnimGui.show(gAnimGui._hidden);
-    gScenGui.show(gScenGui._hidden);
-    gModuleBrushGui.show(gModuleBrushGui._hidden);
-    gLayerGui.show(gLayerGui._hidden);
-}
-
-
 let _exampleLoaders = {};
 async function _loadExampleScenario(name) {
     const scen = await fetch(`./Scenarios/${name}.scen`).then(response => response.text());
@@ -82,68 +72,19 @@ function _generateExampleLoader(name) {
 }
 
 /* ****************************** */
-/* Pathfinder stuff */
-/* ****************************** */
-// TODO: I'm not sure this is the right place to put this functionality, feel free
-// to move it somewhere else if you can find a spot that makes more sense.
-const pathfinder = Module.cwrap("pathfinder", "string", ["string", "string"]);
-let pathfinder_config_i ='{"exists": false}';
-let pathfinder_config_f ='{"exists": false}';
-let pathfinder_controller;
-window._pathfinderConfigDEBUG = async function() {
-    let example_configs = "";
-    await fetch(`./pathfinder/example_config.json`).then(response => response.text()).then(text => { example_configs = text });
-    let j = JSON.parse(example_configs);
-    pathfinder_config_i = JSON.stringify(j.initial);
-    pathfinder_config_f = JSON.stringify(j.final);
-    pathfinder_controller.enable();
-}
-
-window._pathfinderRun = function() {
-    let rv = pathfinder(pathfinder_config_i, pathfinder_config_f);
-    //console.log(rv); // Uncomment this if you want to see the produced scen contents
-    new Scenario(rv);
-}
-
-/* ****************************** */
 /* GUI setup */
 /* ****************************** */
 // GUI elements for general settings
-export const gGraphicsGui = new GUI( { title: "Graphics", width: 160, container: document.getElementById("controlBar") } ).close();
-
-// GUI elements for Visualizer Mode
-export const gAnimGui = new GUI( { title: "Animation", container: document.getElementById("controlBar") } );
-export const gScenGui = new GUI( { title: "Scenario", container: document.getElementById("controlBar") } ).close();
-
-// GUI elements for Configurizer Mode
-export const gModuleBrushGui = new GUI( { title: "Brush", container: document.getElementById("controlBar") } ).hide();
-export const gLayerGui = new GUI( { title: "Layer", container: document.getElementById("controlBar") } ).hide();
-
-// GUI element for Pathfinder and developer options
-export const gPathfinderGui = new GUI( { title: "Pathfinder", container: document.getElementById("controlBar") } ).close();
-export const gDevGui = new GUI( { title: "Dev Menu", width: 160, container: document.getElementById("controlBar") } ).close().hide();
+export const gGui = new GUI();
 
 document.addEventListener("DOMContentLoaded", async function () {
-    // Visualizer Controls
-    gAnimGui.add(new GuiGlobalsHelper('gwAnimSpeed', 1.0, SliderType.QUADRATIC), 'value', 0.0, 5.0, 0.1).name("Anim Speed");
-    gAnimGui.add(new GuiGlobalsHelper('gwAutoAnimate', false), 'value').name("Auto Animate");
-    gGraphicsGui.add(window.gwUser, 'toggleCameraStyle').name("Toggle Camera Style");
-    gGraphicsGui.add(window, '_toggleBackgroundColor').name("Toggle Background Color");
-    gGraphicsGui.add(window, '_toggleFullbright').name("Toggle Fullbright");
-    gAnimGui.add(window, '_requestForwardAnim').name("Step Forward");
-    gAnimGui.add(window, '_requestBackwardAnim').name("Step Backward");
-    // Configurizer Controls
-    gModuleBrushGui.addColor(moduleBrush, 'color').name("Module Color");
-    gModuleBrushGui.add(moduleBrush, 'static').name("Static Module");
-    // TODO: set max value for zSlice to highest module z-value in scene
-    // TODO: might need to adjust step size for zSlice depending on module type
-    gLayerGui.add(moduleBrush, 'zSlice', 0, 10, 1).name("Layer");
-    gLayerGui.add(moduleBrush, 'adjSlicesVisible').name("Visualize Adjacent Layers");
-    // Pathfinder and debug Controls
-    gPathfinderGui.add(window, '_pathfinderConfigDEBUG').name("Set configurations for Pathfinder");
-    pathfinder_controller = gPathfinderGui.add(window, '_pathfinderRun').name("Run Pathfinder").disable();
-    gDevGui.add(window, '_toggleMRWTMode').name("MRWT Mode Toggle");
-
+    gGui.add(new GuiGlobalsHelper('gwAnimSpeed', 1.0, SliderType.QUADRATIC), 'value', 0.0, 5.0, 0.1).name("Anim Speed");
+    gGui.add(new GuiGlobalsHelper('gwAutoAnimate', false), 'value').name("Auto Animate");
+    gGui.add(window.gwUser, 'toggleCameraStyle').name("Toggle Camera Style");
+    gGui.add(window, '_toggleBackgroundColor').name("Toggle Background Color");
+    gGui.add(window, '_toggleFullbright').name("Toggle Fullbright");
+    gGui.add(window, '_requestForwardAnim').name("Step Forward");
+    gGui.add(window, '_requestBackwardAnim').name("Step Backward");
     const _folder = gScenGui.addFolder("Example Scenarios");
     for (let i in EXAMPLE_SCENARIOS) {
         let ex = EXAMPLE_SCENARIOS[i];

@@ -5,7 +5,7 @@ import { User } from "./User.js";
 import { ModuleType, MoveType } from "./utils.js";
 import { Move } from "./Move.js";
 import { MoveSetSequence } from "./MoveSetSequence.js";
-import { gAnimGui } from "./GUI.js";
+import { gGui } from "./GUI.js";
 import { Scenario } from "./Scenario.js";
 
 // Extends THREE Vector3 type with new component-wise abs() and sum() methods
@@ -52,13 +52,6 @@ function _setupWebGLRenderer() {
     THREE.ColorManagement.enabled = true;
     gRenderer.shadowMap.enabled = true;
     gRenderer.setSize(gCanvas.clientWidth, gCanvas.clientHeight);
-    // Mini scene: set up canvas + renderer
-    gMiniCanvas.width = gMiniCanvas.clientWidth;
-    gMiniCanvas.height = gMiniCanvas.clientHeight;
-    gMiniRenderer = new THREE.WebGLRenderer( {canvas: gMiniCanvas, antialiasing: true} );
-    gMiniRenderer.setPixelRatio(window.devicePixelRatio * 1.5);
-    gMiniRenderer.shadowMap.enabled = true;
-    gMiniRenderer.setSize(0.25 * gCanvas.clientWidth, 0.25 * gCanvas.clientHeight);
 }
 function _setupSVGRenderer() {
     gCanvas.width = 0;
@@ -81,18 +74,10 @@ export function toggleRenderMode() {
     }
 }
 
-// Primary scene
 export let gRenderer;
 export const gCanvas = document.getElementById("scene");
 gCanvas._xscale = gCanvas.clientWidth / window.innerWidth; // Used for resizing
 gCanvas._yscale = gCanvas.clientHeight / window.innerHeight; // Used for resizing
-// Mini scene
-export let gMiniRenderer;
-export const gMiniCanvas = document.getElementById("miniScene");
-gMiniCanvas._xscale = gMiniCanvas.clientWidth / window.innerWidth; // Used for resizing
-gMiniCanvas._yscale = gMiniCanvas.clientHeight / window.innerHeight; // Used for resizing
-
-// Final initialization
 export const gLights = {_fullbright: false};
 export const gScene = new THREE.Scene();
 export const gUser = new User();
@@ -202,7 +187,6 @@ function animate(time) {
     gUser.controls.update();
 
 	gRenderer.render( gScene, gUser.camera );
-	gMiniRenderer.render( gScene, gUser.camera );
 
     // Manually add line strokes to SVG paths, if in SVG rendering mode
     if (renderMode == 'SVG') {
