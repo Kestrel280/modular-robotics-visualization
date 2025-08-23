@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     gGui.add(window, '_toggleFullbright').name("Toggle Fullbright");
     gGui.add(window, '_requestForwardAnim').name("Step Forward");
     gGui.add(window, '_requestBackwardAnim').name("Step Backward");
-    const _folder = gScenGui.addFolder("Example Scenarios");
+    const _folder = gGui.addFolder("Example Scenarios");
     for (let i in EXAMPLE_SCENARIOS) {
         let ex = EXAMPLE_SCENARIOS[i];
         _exampleLoaders[ex] = _generateExampleLoader(ex);
